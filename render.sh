@@ -87,7 +87,7 @@ for md in "$SLIDES_SRC"/*.md; do
   pandoc "$md" \
     -s \
     --metadata title="P3817 — $name" \
-    --syntax-highlighting=breezedark \
+    --syntax-highlighting="$ASSETS/code.theme" \
     -H "$TMP/slide-head.html" \
     -o "$SLIDES_OUT/$name.html"
   echo "slide   $SLIDES_OUT/$name.html"
@@ -106,6 +106,10 @@ PAPER_CSS=$(cat <<'EOF'
   body          { max-width: none !important; }
   div.sourceCode{ overflow: visible !important; }
   pre           { white-space: pre-wrap; word-break: break-word; }
+  /* pandoc sets white-space:pre on `code`, and the text is in that inner
+     element — without this the rule above never actually wraps anything.
+     Invisible at normal size; matters when the paper is zoomed for a talk. */
+  pre code      { white-space: inherit; }
   header#title-block-header { display: none; }
   nav#TOC       { background: #f9f9f9; border: 1px solid #ddd; padding: 0.6em 1.2em; margin: 1.5em 0; display: inline-block; min-width: 20em; }
   nav#TOC h2    { margin-top: 0; font-size: 1em; border-bottom: 1px solid #ddd; padding-bottom: 0.3em; }

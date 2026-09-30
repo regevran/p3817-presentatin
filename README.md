@@ -136,6 +136,73 @@ explicitly instead. Both protocols now behave identically.
 The back-link's `href` still points at the section anchor, so a deck opened
 directly, or with JS off, degrades to landing at the top of the right section.
 
+## Code colouring
+
+`slides/assets/code.theme` is a custom pandoc syntax theme — JSON, generated
+once from `breezedark`'s schema so all 31 token keys are valid, then recoloured.
+Edit it directly to change a colour; no regeneration step.
+
+Dracula-family hues — high chroma, well tested on dark backgrounds. All ten
+token colours are AAA on the panel.
+
+| | colour | contrast |
+|---|---|---|
+| keyword (`auto`, `using`) | `#ff79c6` hot pink, bold | 8.2:1 |
+| data type (`int`) | `#8be9fd` electric cyan | 14.0:1 |
+| built-in (`std::`) | `#8be9fd` electric cyan | 14.0:1 |
+| function (`get_record`) | `#50fa7b` spring green | 14.2:1 |
+| number | `#bd93f9` electric purple | 8.1:1 |
+| string | `#f1fa8c` bright yellow | 17.4:1 |
+| comment | `#8a9ad6` periwinkle, italic | 7.1:1 |
+| operator | `#a8b6d1` soft slate | 9.5:1 |
+| everything else | `#f8f8f2` | 18.2:1 |
+
+Operators are kept quiet deliberately. Comments are the dimmest thing on the
+slide on purpose, but still clear of the 4.5:1 AA floor so they survive a
+projector.
+
+### There is a ceiling on how colourful this can get
+
+Worth knowing before spending more time on palettes. Pandoc's lexer tags only
+what it can recognise without semantic analysis. Measured across the current
+deck:
+
+```
+op  x55   [ , ] = ; & (      <- punctuation: 75% of every coloured token
+dv  x 8   2 0 1
+kw  x 7   auto, using
+co  x 2   // comments
+dt  x 1   int
+```
+
+`Point`, `PointPair`, `arr`, `x`, `y`, `__e_today` get **no tag at all** —
+they fall through to the base colour, because pandoc cannot know `Point` is a
+type. Punctuation dominates and has to stay quiet or the code reads as noise.
+So a palette can only ever colour a minority of the glyphs on screen.
+
+Three levers, in increasing cost:
+
+1. **Tint the base colour** (the `text-color` at the top of the theme). It
+   reaches every identifier at once — the single highest-coverage change —
+   but it is one hue everywhere, not variety.
+2. **Colour operators more strongly.** 55 of 73 tokens. Effective, but `[`,
+   `]`, `=` and `;` in a strong colour is exactly what makes code look busy.
+3. **Supply a custom C++ syntax definition** via `--syntax-definition=FILE`,
+   so capitalised identifiers become types and `name(` becomes a function.
+   This is the only route to genuinely more colours. It costs vendoring
+   ~800 lines of KDE XML (pandoc compiles its lexers in, so there is nothing
+   on disk to copy), and a hand-rolled lexer risks mis-highlighting more
+   complex snippets later.
+
+A content lever too: snippets that use strings, `std::` names or function
+calls light up far more than the current ones, which are mostly declarations.
+
+**Gotcha:** pandoc only reads a theme file when the extension is `.theme`. The
+same JSON named `.json` is treated as an unknown style name and silently falls
+back to a built-in — no warning, no error. Keep the `.theme` extension.
+
+The paper is unaffected; it stays on `tango` because it renders on white.
+
 ## Design notes
 
 - Dark decks, body text never below ~28px effective, one idea per screen.

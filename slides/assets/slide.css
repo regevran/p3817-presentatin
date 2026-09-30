@@ -50,7 +50,10 @@ header#title-block-header { display: none; }
   display: none;
   height: 100vh;
   box-sizing: border-box;
-  padding: 7vh 8vw;
+  /* Cap the side padding. As plain 8vw it keeps growing past the 1700px
+     max-width below, so the content column actually shrinks on a wide screen
+     and long code lines start colliding with it. */
+  padding: 7vh clamp(1.5rem, 8vw, 9rem);
   flex-direction: column;
   justify-content: center;
   /* one shared content column, centred, so headings, prose and code all
@@ -143,6 +146,13 @@ header#title-block-header { display: none; }
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+/* pandoc's own stylesheet sets `white-space: pre` on `code`, and the text
+   lives in that inner <code>, not in the <pre>. So the rule above does nothing
+   on its own — long lines overflowed their box instead of wrapping, which
+   only showed up on wide viewports where the side padding ate the width.
+   Inherit the wrapping down to where the text actually is. */
+.slide pre code { white-space: inherit; }
 
 .slide pre code { background: none; padding: 0; }
 
