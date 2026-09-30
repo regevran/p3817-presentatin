@@ -1,0 +1,182 @@
+/* Slide styling for the P3817 talk.
+ *
+ * Design targets: readable from the back of a conference hall.
+ *  - body text never below ~28px effective size (clamp scales with viewport)
+ *  - one idea per slide, no scrolling
+ *  - dark background, high contrast, accent palette carried over from the
+ *    paper's #semantics-grid so hub and slides look like one artifact.
+ */
+
+:root {
+  --bg:       #12141a;
+  --panel:    #0b0d12;
+  --rule:     #262b38;
+  --fg:       #e9ecf3;
+  --muted:    #9aa3b5;
+  --accent:   #7cc4ff;
+
+  /* The three decomposition kinds, mirroring the paper's column colours
+     (#f5fff5 green / #f5f5ff blue / #fff8f0 orange), darkened for a screen. */
+  --array-ink: #8ede8e;
+  --tuple-ink: #9db4ff;
+  --agg-ink:   #ffc078;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+body {
+  font-family: Inter, "Helvetica Neue", Arial, system-ui, sans-serif;
+  font-size: clamp(18px, 1.7vw, 32px);
+  line-height: 1.35;
+  overflow: hidden;             /* a slide is exactly one screen */
+  -webkit-font-smoothing: antialiased;
+
+  /* pandoc's standalone HTML template caps body at 36em, which silently
+     shrink-wraps every slide. Same override the paper's render.sh uses. */
+  max-width: none !important;
+}
+
+/* pandoc emits a title block for -s; the slides carry their own headings. */
+header#title-block-header { display: none; }
+
+/* ---- slides ------------------------------------------------------------ */
+
+.slide {
+  display: none;
+  height: 100vh;
+  box-sizing: border-box;
+  padding: 7vh 8vw;
+  flex-direction: column;
+  justify-content: center;
+  /* one shared content column, centred, so headings, prose and code all
+     start at the same x on an ultrawide projector */
+  max-width: 1700px;
+  margin: 0 auto;
+}
+
+.slide.active { display: flex; }
+
+.slide h1 {
+  font-size: clamp(2.2rem, 5.4vw, 5.5rem);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  margin: 0 0 0.35em;
+}
+
+.slide h2 {
+  font-size: clamp(1.2rem, 2.4vw, 2.4rem);
+  font-weight: 400;
+  line-height: 1.25;
+  color: var(--muted);
+  margin: 0 0 0.8em;
+}
+
+.slide p {
+  margin: 0.45em 0;
+  max-width: 46ch;
+}
+
+.slide strong { color: #fff; }
+.slide em     { color: var(--accent); font-style: normal; }
+
+/* "Given" / "Expands to" markers, as in the paper's semantics grid: the two
+   forms are alternatives, never both present in one program, so each gets its
+   own labelled block rather than sharing a listing. */
+.slide .label {
+  display: inline-block;
+  font-size: 0.6em;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* Today's C++ vs what P3817 adds. Same intent as the labels above — the two
+   are kept visually apart rather than explained apart. Dark rule for what the
+   language does now, accent rule for the proposal. */
+.slide.today h1::after,
+.slide.proposal h1::after {
+  content: "";
+  display: block;
+  width: 2.2em;
+  height: 5px;
+  border-radius: 3px;
+  margin-top: 0.22em;
+}
+.slide.today h1::after    { background: #4a5468; }
+.slide.proposal h1::after { background: var(--accent); }
+
+.slide ul { margin: 0.4em 0; padding-left: 1.2em; }
+.slide li { margin: 0.25em 0; }
+
+/* ---- code -------------------------------------------------------------- */
+
+/* pandoc wraps highlighted code in <div class="sourceCode">, and the
+   breezedark theme paints a background on that wrapper as well as on <pre>.
+   Put the panel on the wrapper only, so the block has one border and one
+   fill instead of two nested boxes. */
+.slide div.sourceCode {
+  background: var(--panel) !important;
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  margin: 0.5em 0;
+}
+
+.slide pre {
+  font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: clamp(0.95rem, 1.9vw, 2.1rem);
+  line-height: 1.35;
+  background: transparent !important;
+  border: none;
+  border-radius: 0;
+  padding: 0.7em 1em;
+  margin: 0;
+  /* Never clip code on a projector: wrap rather than scroll. Same choice the
+     paper's own render.sh makes. A code line too long to fit is a signal to
+     cut the snippet, not to hide the tail. */
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.slide pre code { background: none; padding: 0; }
+
+.slide :not(pre) > code {
+  font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92em;
+  background: #22283a;
+  color: #ffd9a0;
+  padding: 0.08em 0.34em;
+  border-radius: 6px;
+}
+
+/* ---- persistent chrome (lives outside .slide, so it never hides) ------- */
+
+.back-to-paper {
+  position: fixed;
+  left: 3vw;
+  bottom: 2.4vh;
+  z-index: 10;
+  font-size: clamp(0.7rem, 1vw, 1rem);
+  color: var(--accent);
+  text-decoration: none;
+  opacity: 0.75;
+}
+
+.back-to-paper:hover { opacity: 1; text-decoration: underline; }
+
+#slide-counter {
+  position: fixed;
+  right: 3vw;
+  bottom: 2.4vh;
+  z-index: 10;
+  font-size: clamp(0.7rem, 1vw, 1rem);
+  color: var(--muted);
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+}
