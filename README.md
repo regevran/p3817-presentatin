@@ -17,21 +17,23 @@ In **document order**:
 | Semantics → `Order of assignment` | `slides/order-of-assignment.md` | 5 | lexical order, and why it became observable only now |
 | Semantics → the ref-qualifier sentence | `slides/ref-qualifier.md` | 4 | how the ref-qualifier decides copy vs move |
 | Specifiers → the `const` rule | `slides/const.md` | 8 | the rule, the alternative, and why it fails |
+| Further Design Decisions → Returned Lvalues | `slides/returned-lvalues.md` | 2 | `using` before an expression, and the order `std::tie` cannot give |
 | Further Design Decisions → the `_` placeholder | `slides/placeholder.md` | 1 | `using x, _` as a library-free `std::tie`/`std::ignore` |
-| Further Design Decisions → duplicate variables | `slides/duplicate.md` | 1 | the same variable twice is ill-formed, on purpose |
+| Further Design Decisions → duplicate variables | `slides/duplicate.md` | 2 | the same variable twice is ill-formed, on purpose |
+| Further Design Decisions → Packs | `slides/packs.md` | 2 | a tuple into a pack of existing variables, in one line |
+| Examples → Loops | `slides/loops.md` | 1 | a range-based `for` writing to the caller's variable |
 
-The last two are presented in the opposite order to how they sit in the paper:
-the ref-qualifier sentence is *below* `Order of assignment`, but the talk takes
-it first and then scrolls back up. That is presenter navigation, deliberately
-not encoded anywhere in the document.
+The two Semantics rows are presented in the opposite order to how they sit in
+the paper: the ref-qualifier sentence is *below* `Order of assignment`, but the
+talk takes it first and then scrolls back up. That is presenter navigation,
+deliberately not encoded anywhere in the document.
 
 Motivation has no deck on purpose — it is a read-through, since the Abstract
 deck already covers most of it.
 
-Further Design Decisions has two decks — the second and third of its four
-subsections; Returned Lvalues and Packs are read-through. Proposal,
-Specifiers, Examples, Alternative Syntaxes Considered and the rest have none
-yet.
+Further Design Decisions has four decks, one for each of its subsections, and
+Examples has one (Loops). Proposal, Specifiers and Alternative Syntaxes
+Considered have none yet.
 
 ## Build
 
@@ -246,7 +248,7 @@ The paper is unaffected; it stays on `tango` because it renders on white.
 
 Driven through Chromium, over **both** `http://` and `file://`:
 
-All eight markers:
+All eleven markers:
 
 ```
 [0] slides/abstract.html            -> abstract.html              back @  705 (was  705)  PASS
@@ -255,14 +257,17 @@ All eight markers:
 [3] slides/order-of-assignment.html -> order-of-assignment.html   back @ 1955 (was 1955)  PASS
 [4] slides/ref-qualifier.html       -> ref-qualifier.html         back @ 2084 (was 2084)  PASS
 [5] slides/const.html               -> const.html                 back @ 4142 (was 4142)  PASS
-[6] slides/placeholder.html         -> placeholder.html           back @ 5571 (was 5571)  PASS
-[7] slides/duplicate.html           -> duplicate.html             back @ 6068 (was 6068)  PASS
+[6] slides/returned-lvalues.html    -> returned-lvalues.html      back @ 5341 (was 5341)  PASS
+[7] slides/placeholder.html         -> placeholder.html           back @ 5571 (was 5571)  PASS
+[8] slides/duplicate.html           -> duplicate.html             back @ 6068 (was 6068)  PASS
+[9] slides/packs.html               -> packs.html                 back @ 6236 (was 6236)  PASS
+[10] slides/loops.html              -> loops.html                 back @ 7721 (was 7721)  PASS
 ```
 
 Each run arrows forward twice and back once before exiting, so the
 history-per-slide regression cannot pass by accident.
 
-Layout: all eight decks fit without clipping, and no code block overflows,
+Layout: all eleven decks fit without clipping, and no code block overflows,
 at both 1920×1080 and 1366×768.
 
 - Highlight box identical at rest and on hover (377×19, colour-only change).
@@ -282,6 +287,10 @@ These exist so the decks stay consistent as content lands.
 paper's semantics grid. The declaration and its expansion are *alternatives* —
 never both present in one program — so they never share a listing.
 
+**`[Today]{.label}` / `[With P3817]{.label}`** are the same device for a
+before/after pair: two programs that do the same thing in different
+languages, rather than one program and its rewrite.
+
 **Headings carry no inline-code chips either** — `<h1>` runs to 5.5rem, where
 the chip's padding scales with it and the block starts competing with the
 heading. `_term_` (the accent-blue second level) instead; it says "keyword"
@@ -298,7 +307,7 @@ it must never appear in an example of today's behaviour.
 
 ## Open
 
-- Only the eight points above have decks; the rest of the paper is a read-through.
+- Only the eleven points above have decks; the rest of the paper is a read-through.
 - The deck runtime is ~120 lines of hand-rolled JS. If we want fragments
   (progressive line reveal), speaker notes, overview mode and PDF export,
   swap `slides/assets/slide.js` for reveal.js and leave the slide sources
