@@ -20,11 +20,23 @@ For a `using`-marked element that means: read from `e`, write via `operator=`, a
 :::
 
 ::: {.slide .proposal}
-# It was never observable before
+# Nothing was being written
 
-Without `using`, every element is a side-effect-free reference binding — there was nothing to order.
+Without `using`, every element of `auto& [x, y] = arr;` is a reference binding into `e` — and binding a reference has no side effect.
 
-`using` adds `operator=` side effects, so the order becomes visible:
+[Expands to]{.label}
+
+```cpp
+Point (&__e_today)[2] = arr;
+Point& x = __e_today[0];     // a binding, not an assignment
+Point& y = __e_today[1];     // a binding, not an assignment
+```
+:::
+
+::: {.slide .proposal}
+# Now something is written
+
+`using` replaces that binding with an assignment through `operator=`, and an assignment **is** observable:
 
 ```cpp
 auto& [_, using arr[0], using arr[1]] = arr;

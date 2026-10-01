@@ -12,9 +12,11 @@ In **document order**:
 | Marker in the paper | Deck | Slides | Covers |
 |---|---|---|---|
 | Abstract | `slides/abstract.md` | 5 | the hidden variable `__e`; an array with and without `using` |
+| Proposal → the `sb-identifier-list` sentence | `slides/three-kinds.md` | 2 | the three decomposition kinds, and how a name binds in each |
 | Syntax → the `unary-expression` sentence | `slides/syntax.md` | 6 | the three conditions on what may follow `using` |
-| Semantics → `Order of assignment` | `slides/order-of-assignment.md` | 4 | lexical order, and why it became observable only now |
+| Semantics → `Order of assignment` | `slides/order-of-assignment.md` | 5 | lexical order, and why it became observable only now |
 | Semantics → the ref-qualifier sentence | `slides/ref-qualifier.md` | 4 | how the ref-qualifier decides copy vs move |
+| Specifiers → the `const` rule | `slides/const.md` | 8 | the rule, the alternative, and why it fails |
 
 The last two are presented in the opposite order to how they sit in the paper:
 the ref-qualifier sentence is *below* `Order of assignment`, but the talk takes
@@ -232,19 +234,21 @@ The paper is unaffected; it stays on `tango` because it renders on white.
 
 Driven through Chromium, over **both** `http://` and `file://`:
 
-All four markers, over `http://` and `file://`:
+All six markers:
 
 ```
-[0] slides/abstract.html            -> abstract.html             back @  705  (was 705)  PASS
-[1] slides/syntax.html              -> syntax.html               back @ 1670  (was 1670) PASS
-[2] slides/order-of-assignment.html -> order-of-assignment.html  back @ 1956  (was 1956) PASS
-[3] slides/ref-qualifier.html       -> ref-qualifier.html        back @ 2085  (was 2085) PASS
+[0] slides/abstract.html           -> abstract.html               back @  705 (was  705)  PASS
+[1] slides/three-kinds.html        -> three-kinds.html            back @ 1474 (was 1474)  PASS
+[2] slides/syntax.html             -> syntax.html                 back @ 1669 (was 1669)  PASS
+[3] slides/order-of-assignment.html -> order-of-assignment.html   back @ 1955 (was 1955)  PASS
+[4] slides/ref-qualifier.html      -> ref-qualifier.html          back @ 2084 (was 2084)  PASS
+[5] slides/const.html              -> const.html                  back @ 4142 (was 4142)  PASS
 ```
 
 Each run arrows forward twice and back once before exiting, so the
 history-per-slide regression cannot pass by accident.
 
-Layout: all four decks fit without clipping, and no code block overflows,
+Layout: all six decks fit without clipping, and no code block overflows,
 at both 1920×1080 and 1366×768.
 
 - Highlight box identical at rest and on hover (377×19, colour-only change).

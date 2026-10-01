@@ -7,7 +7,7 @@
 :::
 
 ::: {.slide .proposal}
-# The ref-qualifier decides the type of `e`
+# The ref-qualifier decides the type of _e_
 
 `using` does not change how `e` is formed — it is introduced exactly as it is today. So the ref-qualifier still picks its type, and that is what decides whether the assignment copies or moves.
 

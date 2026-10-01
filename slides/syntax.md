@@ -1,7 +1,7 @@
 <a class="back-to-paper" href="../p3817.html#syntax">◀ back to the paper</a>
 
 ::: {.slide .title-slide .proposal}
-# What may follow `using`?
+# What may follow _using_?
 
 ## One unary-expression, with two conditions on it
 :::
@@ -15,7 +15,7 @@
 
 - **unary-expression** — which expressions qualify at all
 - **lvalue** — the ones that name an object
-- **modifiable** — and one we may write to
+- **modifiable** — and one that may be written to
 
 The grammar alone would admit a great deal more than the wording allows.
 :::

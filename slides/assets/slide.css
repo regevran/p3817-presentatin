@@ -87,9 +87,12 @@ header#title-block-header { display: none; }
   margin: 0 0 0.8em;
 }
 
+/* No measure cap: prose spans the same column as the code boxes. At the old
+   46ch the text stopped at 43% of a 1920 screen while the code ran to 73%,
+   which read as two different layouts on one slide. The column is already
+   bounded by .slide's max-width, so there is nothing to rein in here. */
 .slide p {
   margin: 0.45em 0;
-  max-width: 46ch;
 }
 
 /* Three levels of emphasis, strongest last. Mark in the slide source as:
@@ -111,6 +114,20 @@ header#title-block-header { display: none; }
 /* A .key phrase is already the emphasised thing; accent-blue on top of the
    accent-tinted chip reads as mud. Keep the inside of the chip one colour. */
 .slide .key em { color: inherit; }
+
+/* Comparison table — currently the three decomposition kinds. */
+.slide table {
+  border-collapse: collapse;
+  margin: 0.55em 0 0.25em;
+  font-size: 0.75em;
+}
+.slide th, .slide td {
+  border: 1px solid var(--rule);
+  padding: 0.42em 0.9em;
+  text-align: left;
+  vertical-align: top;
+}
+.slide thead th { color: var(--accent); font-weight: 600; }
 
 /* Quoted standard wording — must not look like the surrounding prose, since
    the whole point is that it is verbatim from the document. */
@@ -134,20 +151,27 @@ header#title-block-header { display: none; }
   margin: 0;
 }
 
-/* Today's C++ vs what P3817 adds. Same intent as the labels above — the two
-   are kept visually apart rather than explained apart. Dark rule for what the
-   language does now, accent rule for the proposal. */
-.slide.today h1::after,
-.slide.proposal h1::after {
+/* Today's C++ vs what P3817 adds — the only non-textual cue for which world a
+   slide belongs to, so it is worth keeping.
+ *
+ * It used to be a short rule under the heading, which read as a stray
+ * underline rather than as a signal. A mark *before* the heading cannot be
+ * misread that way: nothing else in the deck sits on that axis. */
+.slide.today h1::before,
+.slide.proposal h1::before {
   content: "";
-  display: block;
-  width: 2.2em;
-  height: 5px;
-  border-radius: 3px;
-  margin-top: 0.22em;
+  display: inline-block;
+  width: 0.19em;
+  height: 0.19em;
+  border-radius: 22%;
+  margin-right: 0.3em;
+  vertical-align: 0.2em;
 }
-.slide.today h1::after    { background: #4a5468; }
-.slide.proposal h1::after { background: var(--accent); }
+/* 3.5:1 and 9.8:1 on the slide background. The grey has to survive a
+   washed-out projector — at #4a5468 it was 2.4:1 and effectively invisible,
+   which would have cost the "today" signal entirely. */
+.slide.today h1::before    { background: #5f6d87; }
+.slide.proposal h1::before { background: var(--accent); }
 
 .slide ul { margin: 0.4em 0; padding-left: 1.2em; }
 .slide li { margin: 0.25em 0; }
