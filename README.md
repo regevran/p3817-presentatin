@@ -17,6 +17,7 @@ In **document order**:
 | Semantics → `Order of assignment` | `slides/order-of-assignment.md` | 5 | lexical order, and why it became observable only now |
 | Semantics → the ref-qualifier sentence | `slides/ref-qualifier.md` | 4 | how the ref-qualifier decides copy vs move |
 | Specifiers → the `const` rule | `slides/const.md` | 8 | the rule, the alternative, and why it fails |
+| Further Design Decisions → the `_` placeholder | `slides/placeholder.md` | 1 | `using x, _` as a library-free `std::tie`/`std::ignore` |
 
 The last two are presented in the opposite order to how they sit in the paper:
 the ref-qualifier sentence is *below* `Order of assignment`, but the talk takes
@@ -24,8 +25,12 @@ it first and then scrolls back up. That is presenter navigation, deliberately
 not encoded anywhere in the document.
 
 Motivation has no deck on purpose — it is a read-through, since the Abstract
-deck already covers most of it. Proposal, Specifiers, Further Design
-Decisions, Examples and the rest have none yet.
+deck already covers most of it.
+
+Further Design Decisions has one deck and it is the second of its four
+subsections; Returned Lvalues, Duplicate Variables and Packs are read-through.
+Proposal, Specifiers, Examples, Alternative Syntaxes Considered and the rest
+have none yet.
 
 ## Build
 
@@ -234,21 +239,22 @@ The paper is unaffected; it stays on `tango` because it renders on white.
 
 Driven through Chromium, over **both** `http://` and `file://`:
 
-All six markers:
+All seven markers:
 
 ```
-[0] slides/abstract.html           -> abstract.html               back @  705 (was  705)  PASS
-[1] slides/three-kinds.html        -> three-kinds.html            back @ 1474 (was 1474)  PASS
-[2] slides/syntax.html             -> syntax.html                 back @ 1669 (was 1669)  PASS
+[0] slides/abstract.html            -> abstract.html              back @  705 (was  705)  PASS
+[1] slides/three-kinds.html         -> three-kinds.html           back @ 1474 (was 1474)  PASS
+[2] slides/syntax.html              -> syntax.html                back @ 1669 (was 1669)  PASS
 [3] slides/order-of-assignment.html -> order-of-assignment.html   back @ 1955 (was 1955)  PASS
-[4] slides/ref-qualifier.html      -> ref-qualifier.html          back @ 2084 (was 2084)  PASS
-[5] slides/const.html              -> const.html                  back @ 4142 (was 4142)  PASS
+[4] slides/ref-qualifier.html       -> ref-qualifier.html         back @ 2084 (was 2084)  PASS
+[5] slides/const.html               -> const.html                 back @ 4142 (was 4142)  PASS
+[6] slides/placeholder.html         -> placeholder.html           back @ 5571 (was 5571)  PASS
 ```
 
 Each run arrows forward twice and back once before exiting, so the
 history-per-slide regression cannot pass by accident.
 
-Layout: all six decks fit without clipping, and no code block overflows,
+Layout: all seven decks fit without clipping, and no code block overflows,
 at both 1920×1080 and 1366×768.
 
 - Highlight box identical at rest and on hover (377×19, colour-only change).
@@ -279,7 +285,7 @@ it must never appear in an example of today's behaviour.
 
 ## Open
 
-- Only the four points above have decks; the rest of the paper is a read-through.
+- Only the seven points above have decks; the rest of the paper is a read-through.
 - The deck runtime is ~120 lines of hand-rolled JS. If we want fragments
   (progressive line reveal), speaker notes, overview mode and PDF export,
   swap `slides/assets/slide.js` for reveal.js and leave the slide sources
