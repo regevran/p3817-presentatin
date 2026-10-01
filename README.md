@@ -18,6 +18,7 @@ In **document order**:
 | Semantics → the ref-qualifier sentence | `slides/ref-qualifier.md` | 4 | how the ref-qualifier decides copy vs move |
 | Specifiers → the `const` rule | `slides/const.md` | 8 | the rule, the alternative, and why it fails |
 | Further Design Decisions → the `_` placeholder | `slides/placeholder.md` | 1 | `using x, _` as a library-free `std::tie`/`std::ignore` |
+| Further Design Decisions → duplicate variables | `slides/duplicate.md` | 1 | the same variable twice is ill-formed, on purpose |
 
 The last two are presented in the opposite order to how they sit in the paper:
 the ref-qualifier sentence is *below* `Order of assignment`, but the talk takes
@@ -27,10 +28,10 @@ not encoded anywhere in the document.
 Motivation has no deck on purpose — it is a read-through, since the Abstract
 deck already covers most of it.
 
-Further Design Decisions has one deck and it is the second of its four
-subsections; Returned Lvalues, Duplicate Variables and Packs are read-through.
-Proposal, Specifiers, Examples, Alternative Syntaxes Considered and the rest
-have none yet.
+Further Design Decisions has two decks — the second and third of its four
+subsections; Returned Lvalues and Packs are read-through. Proposal,
+Specifiers, Examples, Alternative Syntaxes Considered and the rest have none
+yet.
 
 ## Build
 
@@ -65,6 +66,12 @@ It renders as a full-height yellow highlight that is clickable, and reads as
 part of the sentence rather than as an inserted button. Because it's a real
 markdown link with an attribute and not raw HTML, anything that works in
 markdown works inside it — emphasis, `code`, even nested links.
+
+**The marked words are plain prose.** No inline-code chips, and a term of art
+uses `_..._`: a chip inside the highlight renders as a grey block sitting in
+the yellow. The exception is a token that is a glyph rather than a word — the
+`_` in the placeholder sentence — where the chip is the only thing that makes
+it legible, and the link is kept as narrow as possible around it.
 
 Only the *shade* changes on hover, never the extent: a fill that grows when
 the pointer arrives reads as the text resizing.
@@ -239,7 +246,7 @@ The paper is unaffected; it stays on `tango` because it renders on white.
 
 Driven through Chromium, over **both** `http://` and `file://`:
 
-All seven markers:
+All eight markers:
 
 ```
 [0] slides/abstract.html            -> abstract.html              back @  705 (was  705)  PASS
@@ -249,12 +256,13 @@ All seven markers:
 [4] slides/ref-qualifier.html       -> ref-qualifier.html         back @ 2084 (was 2084)  PASS
 [5] slides/const.html               -> const.html                 back @ 4142 (was 4142)  PASS
 [6] slides/placeholder.html         -> placeholder.html           back @ 5571 (was 5571)  PASS
+[7] slides/duplicate.html           -> duplicate.html             back @ 6068 (was 6068)  PASS
 ```
 
 Each run arrows forward twice and back once before exiting, so the
 history-per-slide regression cannot pass by accident.
 
-Layout: all seven decks fit without clipping, and no code block overflows,
+Layout: all eight decks fit without clipping, and no code block overflows,
 at both 1920×1080 and 1366×768.
 
 - Highlight box identical at rest and on hover (377×19, colour-only change).
@@ -274,6 +282,11 @@ These exist so the decks stay consistent as content lands.
 paper's semantics grid. The declaration and its expansion are *alternatives* —
 never both present in one program — so they never share a listing.
 
+**Headings carry no inline-code chips either** — `<h1>` runs to 5.5rem, where
+the chip's padding scales with it and the block starts competing with the
+heading. `_term_` (the accent-blue second level) instead; it says "keyword"
+without the weight.
+
 **`.today` and `.proposal`** on a slide mark which world it belongs to. They
 render as a grey rule under the heading (what the language does now) versus an
 accent rule (what P3817 adds). The distinction is carried visually rather than
@@ -285,7 +298,7 @@ it must never appear in an example of today's behaviour.
 
 ## Open
 
-- Only the seven points above have decks; the rest of the paper is a read-through.
+- Only the eight points above have decks; the rest of the paper is a read-through.
 - The deck runtime is ~120 lines of hand-rolled JS. If we want fragments
   (progressive line reveal), speaker notes, overview mode and PDF export,
   swap `slides/assets/slide.js` for reveal.js and leave the slide sources
