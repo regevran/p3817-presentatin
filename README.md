@@ -5,9 +5,25 @@ a highlighter; clicking one jumps into a slide deck, which you drive with the
 keyboard, and the last thing you press is "back to the paper" — landing
 exactly where you jumped from, not just at the section.
 
-`slides/abstract.md` holds the first real content: structured bindings as they
-are today, then what P3817 adds. `slides/motivation.md` is still Lorem ipsum
-placeholders.
+## Where the talk pauses
+
+In **document order**:
+
+| Marker in the paper | Deck | Slides | Covers |
+|---|---|---|---|
+| Abstract | `slides/abstract.md` | 5 | the hidden variable `__e`; an array with and without `using` |
+| Syntax → the `unary-expression` sentence | `slides/syntax.md` | 6 | the three conditions on what may follow `using` |
+| Semantics → `Order of assignment` | `slides/order-of-assignment.md` | 4 | lexical order, and why it became observable only now |
+| Semantics → the ref-qualifier sentence | `slides/ref-qualifier.md` | 4 | how the ref-qualifier decides copy vs move |
+
+The last two are presented in the opposite order to how they sit in the paper:
+the ref-qualifier sentence is *below* `Order of assignment`, but the talk takes
+it first and then scrolls back up. That is presenter navigation, deliberately
+not encoded anywhere in the document.
+
+Motivation has no deck on purpose — it is a read-through, since the Abstract
+deck already covers most of it. Proposal, Specifiers, Further Design
+Decisions, Examples and the rest have none yet.
 
 ## Build
 
@@ -216,16 +232,20 @@ The paper is unaffected; it stays on `tango` because it renders on white.
 
 Driven through Chromium, over **both** `http://` and `file://`:
 
+All four markers, over `http://` and `file://`:
+
 ```
-http  click      705 -> deck(abstract.html?y=705)   -> #/2 -> back -> p3817.html?y=705 @ 705  EXACT
-http  Escape     874 -> deck(motivation.html?y=874) -> #/2 -> back -> p3817.html?y=874 @ 874  EXACT
-file  click      705 -> deck(abstract.html?y=705)   -> #/2 -> back -> p3817.html?y=705 @ 705  EXACT
-file  Backspace  874 -> deck(motivation.html?y=874) -> #/2 -> back -> p3817.html?y=874 @ 874  EXACT
-file  Escape     705 -> deck(abstract.html?y=705)   -> #/2 -> back -> p3817.html?y=705 @ 705  EXACT
+[0] slides/abstract.html            -> abstract.html             back @  705  (was 705)  PASS
+[1] slides/syntax.html              -> syntax.html               back @ 1670  (was 1670) PASS
+[2] slides/order-of-assignment.html -> order-of-assignment.html  back @ 1956  (was 1956) PASS
+[3] slides/ref-qualifier.html       -> ref-qualifier.html        back @ 2085  (was 2085) PASS
 ```
 
 Each run arrows forward twice and back once before exiting, so the
 history-per-slide regression cannot pass by accident.
+
+Layout: all four decks fit without clipping, and no code block overflows,
+at both 1920×1080 and 1366×768.
 
 - Highlight box identical at rest and on hover (377×19, colour-only change).
 - `p` toggles presentation mode: 16px → 40px, prose 1502px wide (78% of a
@@ -255,7 +275,7 @@ it must never appear in an example of today's behaviour.
 
 ## Open
 
-- `slides/motivation.md` is still placeholder Lorem ipsum.
+- Only the four points above have decks; the rest of the paper is a read-through.
 - The deck runtime is ~120 lines of hand-rolled JS. If we want fragments
   (progressive line reveal), speaker notes, overview mode and PDF export,
   swap `slides/assets/slide.js` for reveal.js and leave the slide sources
