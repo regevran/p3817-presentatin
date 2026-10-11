@@ -29,11 +29,11 @@ auto&& [using x, y] = f();   // e is either          -> copy or move
 ::: {.slide .proposal}
 # Why that is the right answer
 
-`auto` gives `e` an owned object, and assigning *from* it is a move — the object's lifetime ends with the statement anyway.
+`auto` gives `e` an owned object and makes it an _xvalue_, so the assignment moves from it. Nothing can be lost: `e` has no name, and the element moved from is exactly the one that got no binding.
 
-`auto&` gives `e` an lvalue reference to something that outlives the statement, so copying is the only safe reading.
+`auto&` gives `e` an _lvalue_ naming an object that outlives the scope, so the assignment copies — a move would gut an object the caller still holds.
 
-`auto&&` depends on what it binds to, so it is one or the other.
+`auto&&` is one or the other, depending on what it bound to.
 
-None of this is new. It is the same rule that already applies to `std::tie`-free structured binding today.
+None of this turns on `e` dying soon. `e` lives to the end of the _scope_, exactly as any other variable declared there.
 :::
