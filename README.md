@@ -5,6 +5,11 @@ a highlighter; clicking one jumps into a slide deck, which you drive with the
 keyboard, and the last thing you press is "back to the paper" — landing
 exactly where you jumped from, not just at the section.
 
+In front of it all is **`dist/index.html`**, the title slide. That is the file
+you open, and it is what sits on screen in the hall before the talk starts.
+Any navigation key hands off to the paper; `c` on the paper brings the cover
+back, carrying the line you were on.
+
 ## Where the talk pauses
 
 In **document order**:
@@ -49,9 +54,25 @@ Then either serve it:
 python3 -m http.server --directory dist 8801
 ```
 
-**or just open `dist/p3817.html` in the browser.** Everything is static — no
-server, no build step at presentation time, no network. Both work identically;
-see "Returning to the paper" for why that took deliberate effort.
+**or just open `dist/index.html` in the browser** — the cover, which hands off
+to the paper. Everything is static — no server, no build step at presentation
+time, no network. Both work identically; see "Returning to the paper" for why
+that took deliberate effort.
+
+The cover is `cover.md`, rendered by the same pandoc as everything else — its
+one difference is `--embed-resources`, which inlines the image. That is why
+`dist/index.html` is ~3.8 MB: a large HTML file that looks alarming in `ls`,
+entirely deliberate, and instant to load off disk. See "The cover" below.
+
+The image itself is rasterised from the Google Slides export
+`assets/cover.pdf`, once, out of band — building never needs a PDF renderer:
+
+```sh
+pdftoppm -png -scale-to-x 2880 -scale-to-y -1 -singlefile \
+    assets/cover.pdf assets/cover
+```
+
+2880 wide is exactly 1.5× a 1080p projector. Re-run it if the artwork changes.
 
 Requires `pandoc` and `python3` to *build*; nothing to present.
 
@@ -111,17 +132,50 @@ Then `./render.sh`.
 |---|---|
 | `P3817.md` | the paper, with highlight phrases inline |
 | `assets/paper.js` | return position + presentation mode, embedded at build time |
+| `cover.md` | the title slide — one image and a link, and nothing else |
+| `assets/cover.pdf` | the slide artwork, exported from Google Slides — the source |
+| `assets/cover.png` | the artwork rasterised, inlined into `dist/index.html` |
+| `assets/cover.css` | cover styling, embedded at build time |
+| `assets/cover.js` | cover keyboard nav, embedded at build time |
 | `slides/*.md` | slide sources, one file per deck |
 | `slides/assets/` | deck CSS + JS, embedded into each deck |
 | `dist/` | generated, gitignored |
 
 ## Presenting
 
+**Cover,** `dist/index.html` — the title slide. Open this one first; it is what
+sits on screen while the hall fills up.
+
+| Key | |
+|---|---|
+| `Space` `Enter` `→` `↓` `←` `↑` `PageDown` `PageUp` `Backspace` `c`, or click anywhere | hand off to the paper, at the line it was last on |
+
+There is no separate "back" on a title slide — nothing is behind it — so every
+key does the same thing, and a presenter who reaches for the wrong one still
+lands where they were instead of losing their place.
+
+Deliberate navigation keys only, not "any key". The cover sits unattended on a
+lectern for ten minutes before the talk; a stray keypress must not make the
+title slide disappear.
+
+`Esc` is bound too, with one exception: under the Fullscreen API the browser
+consumes `Esc` to leave full-screen and nothing can prevent that, so advancing
+as well would start the talk out of full-screen. That press is the exit only;
+the next one advances. (F11-style full-screen is unaffected — `Esc` does not
+leave it.)
+
 **Paper:** press `p` to toggle presentation mode — 16px → 40px, and prose
 widened from ~200-character lines to ~75, filling ~78% of a 1920 screen
 instead of a narrow column. Remembered for the session, so it survives jumping
 to a deck and back. Off by default, so the page still looks exactly like a
 WG21 paper.
+
+Press `c` — or click **◀ cover**, which appears in the bottom-right corner in
+presentation mode and nowhere else — to go back to the title slide. It carries
+the line you are on, the same way a highlight does, so it is a round trip
+rather than a one-way trip. The link is injected by `paper.js` rather than
+written into `P3817.md`, so a `--submission` build carries no conference
+chrome at all.
 
 The semantics grid scales down harder than prose (0.64em vs the 40px base)
 because it is four columns of code and is the widest thing in the paper — at
@@ -142,6 +196,70 @@ In full-screen, `Esc` is also the browser's exit-full-screen key, so
 
 The URL tracks the slide (`#/3`), so a slide stays directly linkable and a
 reload lands on the same one.
+
+## The cover
+
+A title slide, up in the hall before the talk starts. It is a page and not a
+deck, deliberately: a title slide must not carry deck chrome (the `1 / 1`
+counter, a "back to the paper" link), and its forward action is *advance to
+the paper*, which is not what `slide.js` does — `Space` on a one-slide deck is
+a no-op. Keeping it separate also leaves all eleven decks byte-identical.
+
+Built as `dist/index.html` so it is both what you double-click and what
+`python3 -m http.server --directory dist` serves at `/`.
+
+**The markdown is one line.** `cover.md` is the image wrapped in a link — that
+is the whole content. Everything that makes it look like a cover rather than a
+document is `assets/cover.css`, and the keyboard is `assets/cover.js`; both go
+in through `-H`, exactly as the decks take `slides/assets/slide.css` and `.js`.
+So the markdown is the source of truth for the content and not for the
+presentation — worth saying plainly, because it is easy to overestimate what
+moving this into markdown bought.
+
+The link is real, so a click advances even with JS off; the script only adds
+the `?y=` hand-back.
+
+Pandoc needs three things undone, all of which it does because its standalone
+template is built for a document rather than a slide: a title block (from
+`--metadata title=`, which is worth keeping for the tab), `body` centred with a
+margin, and `body` capped at `36em`. The cap has silently shrink-wrapped things
+in this repo before, and it is the same override the paper and the decks carry.
+
+`--resource-path` rather than a `cd`, so `assets/cover.png` in the markdown
+resolves no matter which directory `render.sh` was invoked from.
+
+**The raster.** The original export was 960×540 — the slide's own size, which
+is a 2× upscale on a 1080p projector and soft on exactly the thing the eye is
+on, the title. It is now rasterised from the Slides *PDF* export at 2880 wide,
+exactly 1.5× a 1080p screen, so the browser downsamples instead of upsampling.
+The PDF is vector, so the type is crisp and the fonts travel inside it; an SVG
+export would be equally sharp but risks arriving without its typeface, which
+is worse than soft.
+
+`object-fit: contain`, not `cover`. The Core C++ logo and the date sit in the
+top-left corner and cropping them is worse than letterboxing. Every hall
+projector is 16:9, which is the image's own ratio, so on stage it fills edge to
+edge with no mat at all — the mat is only ever visible on the presenter's
+laptop, where it is painted the decks' `#12141a` so it reads as slide chrome
+rather than as a bug.
+
+**Why 3.8 MB.** `--embed-resources` inlines the PNG as a `data:` URI. That
+costs 33% over the 2.9 MB file and makes `dist/index.html` a size that looks
+alarming in `ls` — so: the alternative is to link the PNG as a sibling, which
+is smaller and tidier, and it was a close call. What decided it is that
+`dist/` is thirteen self-contained files and the cover is the one page that has
+to work at the very start of the talk with no setup at all. Making it the single
+exception buys 1 MB, on a gitignored directory whose HTML is generated and never
+read, and costs a mental model with a hole in the one place it matters. It is a
+one-flag change if that trade ever looks wrong.
+
+`render.sh` asserts the image really was embedded, because this is the one
+property of the file that is invisible when it breaks — a silently un-embedded
+cover still renders, just as a broken image in front of the hall.
+
+Measured alternative, if the size does become a problem: a lossy WebP of the
+same raster is 292 KB and looked identical to the PNG in a side-by-side of the
+title text at presentation scale.
 
 ## Returning to the paper — don't "fix" this
 
@@ -167,6 +285,12 @@ explicitly instead. Both protocols now behave identically.
 
 The back-link's `href` still points at the section anchor, so a deck opened
 directly, or with JS off, degrades to landing at the top of the right section.
+
+**The cover speaks the same protocol.** It is not a deck, but the paper hands
+it `index.html?y=4142` and it hands back `p3817.html?y=4142`, so `c` on the
+paper and `Esc` on the cover is a round trip that lands on the exact line —
+over `file://` too, because it never touches history. Opened cold, with no
+`?y=`, it goes to the top, which is what a title slide should do.
 
 ## Code colouring
 
@@ -277,7 +401,41 @@ at both 1920×1080 and 1366×768.
 - The semantics grid fits inside the viewport in presentation mode, measured
   by the right-most edge of any descendant (1447px of 1920, was 1994px and
   clipped before the table ratio was lowered).
-- `--submission` unwraps 2 highlight phrases, leaving the sentences intact.
+- `--submission` unwraps all eleven highlight phrases, leaving the sentences
+  intact and no `elab` link behind.
+
+The cover, also over both protocols:
+
+```
+paper --c--> cover carries the line     index.html?y=4142   (paper was at 4142)  PASS
+cover --Esc--> paper, exact line        p3817.html?y=4142 @ 4142                 PASS
+cold cover --Space--> paper top         p3817.html @ 0                           PASS
+1920x1080 / 1366x768 fills, no mat      img fills the viewport exactly           PASS
+1440x900 (16:10) letterboxes, no crop   logo and date intact                     PASS
+cover link hidden by default, shown after p                                      PASS
+cover link carries the line too         index.html?y=3000                        PASS
+```
+
+- The cover never scrolls: `scrollHeight == innerHeight` at all three sizes.
+- On a 16:9 screen the image box ratio equals the image's own (1.7778), so
+  there is no mat at all; on 16:10 the mat appears top and bottom and nothing
+  is cropped.
+- The **◀ cover** pill is placed bottom-**right**. Measured at five scroll
+  positions, the bottom-left corner lands on the Contents list on the first
+  screen and on prose everywhere else, because the paper is left-aligned and
+  prose is capped at `min(86%, 95ch)`; the right-hand gutter is normally empty.
+
+Build, after the cover became a pandoc document:
+
+- `render.sh` run from a foreign working directory, and into a custom output
+  directory, both produce the same cover — that is `--resource-path` doing its
+  job.
+- Pandoc's template is fully undone in the output: the title block computes to
+  `display: none`, `body` margin is `0px`, `max-width` is `none`, and the page
+  has exactly two elements, the hidden header and the `<p>` wrapping the image.
+- The embed assertion was tested against a build **without**
+  `--embed-resources`: pandoc emits `src="assets/cover.png"` and the build
+  aborts, so the guard is not vacuous.
 
 ## Slide conventions
 

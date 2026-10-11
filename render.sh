@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Build the P3817 conference-talk materials.
 #
+#   dist/index.html           the cover — the title slide, shown in the hall
+#                             before the talk; hands off to the paper
 #   dist/p3817.html           the paper, with clickable highlight phrases
 #   dist/slides/<name>.html   self-contained slide decks (CSS + JS embedded)
 
@@ -10,7 +12,7 @@ usage() {
   cat <<'EOF'
 Usage: ./render.sh [OUTDIR] [--submission]
 
-Builds the paper and the slide decks into OUTDIR (default: ./dist).
+Builds the cover, the paper and the slide decks into OUTDIR (default: ./dist).
 
 Marking a phrase for elaboration
 --------------------------------
@@ -25,13 +27,36 @@ is a real markdown link with an attribute, not raw HTML.
 Files:
   P3817.md                  the paper
   assets/paper.js           paper presentation mode (embedded)
+  cover.md                  the title slide, one image and a link
+  assets/cover.css          cover styling    (embedded into the cover)
+  assets/cover.js           cover keyboard nav (embedded into the cover)
+  assets/cover.png          the title slide image (embedded; see below)
   slides/*.md               slide sources, one file per topic cluster
   slides/assets/slide.css   deck styling   (embedded into each deck)
   slides/assets/slide.js    keyboard nav   (embedded into each deck)
 
+The cover
+---------
+Rendered with pandoc like everything else, so it has a markdown source. The
+one difference is --embed-resources, which inlines assets/cover.png as a data:
+URI: the cover is then a single file with no sibling asset, the same property
+every deck and the paper already have. That is what makes dist/index.html
+~3.9 MB, which is deliberate.
+
+assets/cover.pdf is the Google Slides export and is the source of truth for
+the artwork; the PNG next to it is rasterised from it once, out of band, so
+that building never needs a PDF renderer:
+
+  pdftoppm -png -scale-to-x 2880 -scale-to-y -1 -singlefile \
+      assets/cover.pdf assets/cover
+
+2880 wide is exactly 1.5x a 1080p projector, so the browser downsamples and
+the title text stays crisp instead of being upscaled 2x from the slide's own
+960x540. Re-run it if the artwork changes.
+
 Options:
   --submission   Unwrap every highlighted phrase back to plain text, for a
-                 clean paper to hand to WG21. Slides are still built.
+                 clean paper to hand to WG21. Slides and cover are still built.
   -h, --help     Show this message and exit
 
 Requirements:
@@ -68,6 +93,58 @@ command -v pandoc >/dev/null || { echo "render.sh: pandoc not found on PATH" >&2
 mkdir -p "$SLIDES_OUT"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
+
+# ---------------------------------------------------------------------------
+# 0. The cover
+#
+# The title slide, up in the hall before the talk starts. Built as
+# dist/index.html for two reasons: it is then what you double-click, and it is
+# what `python3 -m http.server --directory dist` serves at /.
+#
+# Rendered exactly like a deck is — same pandoc, same -H header injection —
+# so it has a markdown source like every other artifact here. See "The cover"
+# in the usage text for why --embed-resources is on.
+#
+# Pressing a navigation key — or clicking — hands off to the paper, carrying
+# the line the paper was last on as ?y=, the same parameter the decks use.
+# So the cover is reached and left exactly like a deck is, and "c" on the
+# paper brings it back.
+# ---------------------------------------------------------------------------
+
+COVER_MD="$SCRIPT_DIR/cover.md"
+COVER_CSS="$SCRIPT_DIR/assets/cover.css"
+COVER_JS="$SCRIPT_DIR/assets/cover.js"
+COVER_PNG="$SCRIPT_DIR/assets/cover.png"
+COVER="$OUTDIR/index.html"
+
+for f in "$COVER_MD" "$COVER_CSS" "$COVER_JS" "$COVER_PNG"; do
+  [ -f "$f" ] || { echo "render.sh: missing $f" >&2; exit 1; }
+done
+
+{
+  printf '<style>\n';   cat "$COVER_CSS"; printf '\n</style>\n'
+  printf '<script>\n';  cat "$COVER_JS";  printf '\n</script>\n'
+} > "$TMP/cover-head.html"
+
+# --resource-path, not a cd: cover.md refers to the image as assets/cover.png
+# so the markdown stays a portable source, and this makes that resolve no
+# matter which directory render.sh was invoked from.
+pandoc "$COVER_MD" \
+  -s \
+  --embed-resources \
+  --resource-path="$SCRIPT_DIR" \
+  --metadata title="Structure Binding Assignment (P3817) — Core C++ 2026" \
+  -H "$TMP/cover-head.html" \
+  -o "$COVER"
+
+# The one property of this file that is invisible when it breaks. If pandoc
+# ever stops embedding — a renamed flag, a path it cannot resolve — the cover
+# would still render, just as a broken image in front of the hall. Fail the
+# build instead.
+grep -q 'src="data:image/png;base64,' "$COVER" \
+  || { echo "render.sh: cover image was not embedded into $COVER" >&2; exit 1; }
+
+echo "cover   $COVER  ($(du -h "$COVER" | cut -f1), image embedded)"
 
 # ---------------------------------------------------------------------------
 # 1. Slide decks
@@ -155,6 +232,39 @@ PAPER_CSS=$(cat <<'EOF'
   /* Only the shade changes on hover, never the extent — a fill that grows
      when the pointer arrives reads as the text resizing. */
   a.elab:hover { background: #ffd12e; }
+
+  /* ---- the cover link (press "c") ------------------------------------
+     Injected by paper.js, never written into the paper source. Hidden unless
+     presentation mode is on: on a desk the page still has to look exactly
+     like a WG21 submission, and this is talk furniture.
+
+     Fixed to the bottom-right corner so it is reachable from any scroll
+     position mid-talk. That means it floats over the page, which is why it
+     gets an opaque pill rather than bare text: a link sitting on top of a
+     paragraph still has to read as a link.
+
+     Right and not left, because the paper is left-aligned — prose is capped
+     at min(86%, 95ch), so the right-hand gutter is normally empty, while the
+     bottom-left corner lands on the Contents list on the first screen and on
+     prose everywhere else. Measured at five scroll positions. */
+  a.cover-link {
+    display: none;
+    position: fixed;
+    right: 2vw;
+    bottom: 2vh;
+    z-index: 20;
+    font-size: 0.5em;
+    line-height: 1.7;
+    padding: 0 0.8em;
+    border: 1px solid #c8d2e0;
+    border-radius: 999px;
+    background: #fff;
+    color: #2a5db0;
+    text-decoration: none;
+    opacity: 0.75;
+  }
+  html.present a.cover-link { display: inline-block; }
+  a.cover-link:hover       { opacity: 1; }
 
   /* ---- presentation mode (press "p") --------------------------------
      The paper's natural 16px / ~200-character lines are unreadable from the

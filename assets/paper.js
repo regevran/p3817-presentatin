@@ -1,6 +1,6 @@
 /* Paper-side behaviour for the talk.
  *
- * Three jobs:
+ * Four jobs:
  *
  *  1. Remember where the reader was when they jump into a deck, and hand that
  *     position to the deck. The deck gives it back on the way out, so the
@@ -17,12 +17,19 @@
  *     lines, fine on a desk and unreadable from the back of a hall. Press "p"
  *     to scale the type up and pull prose in to a readable measure. Off by
  *     default, so the page still looks exactly like a WG21 paper.
+ *
+ *  4. "c" opens the cover page, carrying the same position. The cover is not
+ *     a deck — it is the title slide that sits on screen before the talk — but
+ *     it takes ?y= and hands it back exactly like one, so from here it is just
+ *     another place to jump to and come back from.
  */
 (function () {
   'use strict';
 
   var MODE_KEY = 'p3817.present';
   var POS_KEY = 'y';
+  /* Sibling of this page in the build output. */
+  var COVER = 'index.html';
 
   function withPos(href, y) {
     var hash = '';
@@ -32,6 +39,12 @@
     // The hash is dropped deliberately: with an explicit position the anchor
     // scroll only competes with ours, and the two can land in either order.
     return href + sep + POS_KEY + '=' + y;
+  }
+
+  /* Everything that leaves the paper — a deck or the cover — goes through
+     here, so they all carry the position the same way. */
+  function leaveTo(href) {
+    location.href = withPos(href, Math.round(window.scrollY));
   }
 
   function rememberedPos() {
@@ -62,27 +75,41 @@
 
     document.addEventListener('keydown', function (e) {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
-      if (e.key !== 'p' && e.key !== 'P') return;
       var tag = (document.activeElement || {}).tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
+      if (e.key === 'c' || e.key === 'C') { e.preventDefault(); leaveTo(COVER); return; }
+      if (e.key !== 'p' && e.key !== 'P') return;
 
       var on = !document.documentElement.classList.contains('present');
       apply(on);
       remember(on);
     });
 
-    /* Carry the current position into the deck we are about to open. */
+    /* Carry the current position into the deck — or the cover — we are about
+       to open. Both take ?y= and both hand it back. */
     document.addEventListener('click', function (e) {
-      var link = e.target.closest && e.target.closest('a.elab');
+      var link = e.target.closest && e.target.closest('a.elab, a.cover-link');
       if (!link) return;
       var href = link.getAttribute('href');
       if (!href) return;
       e.preventDefault();
-      location.href = withPos(href, Math.round(window.scrollY));
+      leaveTo(href);
     });
 
-    /* Restore a position handed back by a deck. The browser may still be
-       settling its own fragment/scroll restoration, so do it after load. */
+    /* The way back to the cover, visible only in presentation mode — the CSS
+       hides it otherwise, so the paper still reads as a plain WG21 submission
+       by default. Injected from script rather than written into P3817.md, so
+       a --submission build carries no conference chrome either. */
+    var coverLink = document.createElement('a');
+    coverLink.className = 'cover-link';
+    coverLink.setAttribute('href', COVER);
+    coverLink.textContent = '◀ cover';
+    document.body.appendChild(coverLink);
+
+    /* Restore a position handed back by a deck or by the cover. The browser
+       may still be settling its own fragment/scroll restoration, so do it
+       after load. */
     var y = rememberedPos();
     if (y !== null) {
       if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
