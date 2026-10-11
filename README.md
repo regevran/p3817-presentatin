@@ -437,6 +437,50 @@ Build, after the cover became a pandoc document:
   `--embed-resources`: pandoc emits `src="assets/cover.png"` and the build
   aborts, so the guard is not vacuous.
 
+### The C++ on the slides
+
+Two examples have been written onto a slide, looked fine, and not compiled:
+`std::unique_ptr` members deleting `Obj`'s copy constructor under
+`auto [a, using b, c] = obj;`, and a raw `T*` member assumed to leave a hole
+when a pointer's move *is* its copy. Snippets get compiled now, not reasoned
+about.
+
+P3817's syntax is not in the system clang. The implementation is the working
+tree at `/home/ran/dev/ran/llvm-project-fork`, and the feature is off by
+default — the flag is mandatory, and the error names it:
+
+```sh
+/home/ran/dev/ran/llvm-project-fork/build/bin/clang++ \
+    -std=c++26 -Xclang -fstructured-binding-assignment prog.cpp
+```
+
+That is clang 24.0.0git. `/usr/bin/clang++` reports a `regevran/llvm-project-fork`
+version string but is an older commit that rejects the syntax — a wrong turn
+worth not taking twice.
+
+`e` is unnameable by design, so a check that needs to look at the hole recovers
+it through a binding: `Obj` is standard-layout and `m0` is first, so
+`Obj* e = reinterpret_cast<Obj*>(&a);`.
+
+The ref-qualifier deck's last slide, compiled from the proposal's own syntax:
+
+```
+a=1  c=3
+b=owns   e.m1=null   obj.m1=owns
+&a == &obj.m0  ->  no (a names e, the copy)
+```
+
+The same program with `std::unique_ptr` members:
+
+```
+error: call to implicitly-deleted copy constructor of 'Obj'
+```
+
+And `auto&& [a, using b, c] = std::move(obj);` prints `&a == &obj.m0 -> yes`,
+which settles that `e` is a reference to `obj` there rather than a separate
+object — `std::move` is a cast. It is also why `auto&&` compiles with move-only
+members and `auto` does not.
+
 ## Slide conventions
 
 These exist so the decks stay consistent as content lands.

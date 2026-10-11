@@ -31,9 +31,14 @@ auto&& [using x, y] = f();   // e is either          -> copy or move
 
 `auto` gives `e` an owned object and makes it an _xvalue_, so the assignment moves from it. Nothing can be lost: `e` has no name, and the element moved from is exactly the one that got no binding.
 
+```cpp
+Obj obj;  std::shared_ptr<A> b;   // Obj: int m0, shared_ptr<A> m1, int m2
+auto [a, using b, c] = obj;       // e is a copy of obj; obj keeps all three
+// a refers to e.m0, e.m1 is nullptr (it moved into b), c refers to e.m2
+```
+
 `auto&` gives `e` an _lvalue_ naming an object that outlives the scope, so the assignment copies — a move would gut an object the caller still holds.
 
 `auto&&` is one or the other, depending on what it bound to.
 
-None of this turns on `e` dying soon. `e` lives to the end of the _scope_, exactly as any other variable declared there.
 :::
