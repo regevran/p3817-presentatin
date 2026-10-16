@@ -20,9 +20,9 @@ This is the reason the proposal needs no rule of its own here: the existing mach
 # The three cases
 
 ```cpp
-auto   [using x, y] = f();   // e owns the object    -> move
-auto&  [using x, y] = f();   // e is an lvalue ref   -> copy
-auto&& [using x, y] = f();   // e is either          -> copy or move
+auto   [using x, y] = f();   // e owns the object    -> move from e
+auto&  [using x, y] = f();   // e is an lvalue ref   -> copy from e
+auto&& [using x, y] = f();   // e is either          -> copy or move from e
 ```
 :::
 

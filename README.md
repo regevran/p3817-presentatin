@@ -16,15 +16,15 @@ In **document order**:
 
 | Marker in the paper | Deck | Slides | Covers |
 |---|---|---|---|
+| History → `Substantive changes` | `slides/process.md` | 6 | presented **last** — how R1 changed, and the wording work that drove it |
 | Abstract | `slides/abstract.md` | 5 | the hidden variable `__e`; an array with and without `using` |
 | Proposal → the `sb-identifier-list` sentence | `slides/three-kinds.md` | 2 | the three decomposition kinds, and how a name binds in each |
 | Syntax → the `unary-expression` sentence | `slides/syntax.md` | 6 | the three conditions on what may follow `using` |
 | Semantics → `Order of assignment` | `slides/order-of-assignment.md` | 5 | lexical order, and why it became observable only now |
 | Semantics → the ref-qualifier sentence | `slides/ref-qualifier.md` | 4 | how the ref-qualifier decides copy vs move |
-| Specifiers → the `const` rule | `slides/const.md` | 8 | the rule, the alternative, and why it fails |
-| Further Design Decisions → Returned Lvalues | `slides/returned-lvalues.md` | 2 | `using` before an expression, and the order `std::tie` cannot give |
+| Further Design Decisions → Returned Modifiable Lvalues | `slides/returned-lvalues.md` | 2 | `using` before an expression, and the order `std::tie` cannot give |
 | Further Design Decisions → the `_` placeholder | `slides/placeholder.md` | 1 | `using x, _` as a library-free `std::tie`/`std::ignore` |
-| Further Design Decisions → duplicate variables | `slides/duplicate.md` | 2 | the same variable twice is ill-formed, on purpose |
+| Further Design Decisions → Duplicate Targets | `slides/duplicate.md` | 1 | the same object twice is allowed, and now specified — carried by the `std::tie(x, x)` beat |
 | Further Design Decisions → Packs | `slides/packs.md` | 2 | a tuple into a pack of existing variables, in one line |
 | Examples → Loops | `slides/loops.md` | 1 | a range-based `for` writing to the caller's variable |
 
@@ -36,9 +36,26 @@ deliberately not encoded anywhere in the document.
 Motivation has no deck on purpose — it is a read-through, since the Abstract
 deck already covers most of it.
 
-Further Design Decisions has four decks, one for each of its subsections, and
-Examples has one (Loops). Proposal, Specifiers and Alternative Syntaxes
-Considered have none yet.
+Further Design Decisions has four decks; R1 added a fifth subsection — Reusing
+a Declared Name as a Target — which has none yet. Specifiers has none either:
+R1 reversed that rule, so the eight-slide deck arguing the old one was deleted
+and §Specifiers is a read-through. Proposal and Alternative Syntaxes Considered
+have none.
+
+R1 arrived with every highlight marker stripped out of it. All of them were
+re-placed by hand, and `render.sh` now refuses to build if one goes missing. R1
+also reversed two decisions, so the decks that argued the old ones were dealt
+with rather than left contradicting the paper: the eight-slide `const` deck is
+deleted, and `duplicate.md` is down to its single `std::tie(x, x)` slide. Both
+are in the process deck, framed by the wording exercise that produced them —
+R1's Wording section was a placeholder until the authors were told that
+*specifying* a design reveals what reviewing it does not, which turned out to
+be true of three of the rules they had.
+
+Its marker is the only one in §History — the top of the paper — but the
+**process deck is presented last**, as a retrospective once the audience has
+seen the proposal itself. Like the two Semantics rows, that ordering is
+presenter navigation and is deliberately not encoded in the document.
 
 ## Build
 
@@ -47,6 +64,16 @@ Considered have none yet.
 ./render.sh --submission    # -> dist/, with highlights unwrapped
 ./render.sh /tmp/out        # custom output dir
 ```
+
+The first line of output is the marker guard:
+
+```
+guard   11 highlight markers -> 11 decks, all reachable
+```
+
+Every deck must be reached by exactly one marker, and every marker must name a
+deck that exists. A dropped or misspelled marker fails the build rather than
+silently making a slide unreachable from the paper.
 
 Then either serve it:
 
@@ -370,9 +397,13 @@ The paper is unaffected; it stays on `tango` because it renders on white.
 
 ## Verified
 
+> **⚠ Stale — not re-measured since the R1 update.** R1 renumbered every
+> paragraph and added ~65 lines, so every scroll offset below is wrong. The
+> procedure has not been re-run. Re-measure before trusting a number here.
+
 Driven through Chromium, over **both** `http://` and `file://`:
 
-All eleven markers:
+All eleven markers (the pre-R1 run — `const.html` no longer exists):
 
 ```
 [0] slides/abstract.html            -> abstract.html              back @  705 (was  705)  PASS
@@ -391,7 +422,7 @@ All eleven markers:
 Each run arrows forward twice and back once before exiting, so the
 history-per-slide regression cannot pass by accident.
 
-Layout: all eleven decks fit without clipping, and no code block overflows,
+Layout: every deck fit without clipping, and no code block overflows,
 at both 1920×1080 and 1366×768.
 
 - Highlight box identical at rest and on hover (377×19, colour-only change).
@@ -401,7 +432,7 @@ at both 1920×1080 and 1366×768.
 - The semantics grid fits inside the viewport in presentation mode, measured
   by the right-most edge of any descendant (1447px of 1920, was 1994px and
   clipped before the table ratio was lowered).
-- `--submission` unwraps all eleven highlight phrases, leaving the sentences
+- `--submission` unwraps every highlight phrase, leaving the sentences
   intact and no `elab` link behind.
 
 The cover, also over both protocols:
@@ -493,15 +524,19 @@ never both present in one program — so they never share a listing.
 before/after pair: two programs that do the same thing in different
 languages, rather than one program and its rewrite.
 
+
 **Headings carry no inline-code chips either** — `<h1>` runs to 5.5rem, where
 the chip's padding scales with it and the block starts competing with the
 heading. `_term_` (the accent-blue second level) instead; it says "keyword"
 without the weight.
 
-**`.today` and `.proposal`** on a slide mark which world it belongs to. They
-render as a grey rule under the heading (what the language does now) versus an
-accent rule (what P3817 adds). The distinction is carried visually rather than
-explained in prose.
+**`.today`, `.proposal` and `.process`** on a slide mark which world it
+belongs to. Each renders as a coloured dot *before* the heading — grey for what
+the language does now, accent blue for what P3817 adds, amber for what changed
+between revisions. (It was a rule under the heading once, and read as a stray
+underline.) A process slide is neither of the other two worlds, so it cannot
+borrow either dot without claiming the wrong one. The distinction is carried
+visually rather than explained in prose.
 
 **The hidden variable is named per world**: `__e_today` for current C++,
 `__e_p3817` for what the proposal expands to. The suffix names the paper, so

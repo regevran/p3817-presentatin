@@ -15,5 +15,5 @@
 | a pair or tuple, when `std::tuple_size<E>` is complete | `get<i>(__e)` | `int& x = get<0>(__e);` |
 | anything else — a plain struct | the `i`-th data member of `__e` | `int& x = __e.m0;` |
 
-`using` has to be threaded through all three
+`using` has to be threaded through all three.
 :::

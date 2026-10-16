@@ -1,4 +1,4 @@
-<a class="back-to-paper" href="../p3817.html#returned-lvalues">◀ back to the paper</a>
+<a class="back-to-paper" href="../p3817.html#returned-modifiable-lvalues">◀ back to the paper</a>
 
 ::: {.slide .proposal}
 # Not only a name
@@ -25,7 +25,7 @@ Same assignment, no library call — and the destinations are no longer function
 
 In `std::tie(foo(), s[0])` both destinations are function arguments, and argument evaluation has no order:
 
-> The initialization of a parameter, including every associated value computation and side effect, is indeterminately sequenced with respect to that of any other parameter. — [expr.call]
+> The initialization of a parameter or, if the implementation introduces any temporary objects to hold the values of function parameters, the initialization of those temporaries, including every associated value computation and side effect, is indeterminately sequenced with respect to that of any other parameter. — [expr.call] ¶8
 
 No library wording can impose one, and `std::tuple`'s assignment does not sequence the assignments either.
 

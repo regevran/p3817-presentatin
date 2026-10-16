@@ -35,5 +35,5 @@ auto [using arr[Is]...] = std::move(t);   // into chosen elements of arr
 
 `Is` is any index pack, supplied at the call — `assign_into<2, 0, 1>(...)`. No `std::index_sequence` is involved.
 
-The duplicate rule survives expansion: `assign_into<2, 0, 2>(...)` targets `arr[2]` twice, and is ill-formed.
+Taken together, the expansions must produce exactly the structured binding size _less the number of non-pack elements_ — otherwise the program is ill-formed.
 :::

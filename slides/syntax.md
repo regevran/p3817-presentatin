@@ -23,15 +23,17 @@ The grammar alone would admit a great deal more than the wording allows.
 ::: {.slide .proposal}
 # 1. A unary-expression
 
-[§ expr.unary]{.label}
+[§ expr.unary.general]{.label}
 
 ```cpp
 unary-expression:
-    postfix-expression                  // a name, arr[i], obj.field
-    unary-operator cast-expression      // * & + - ! ~
+    postfix-expression                  // a name, arr[i], obj.field, f(), p->m
+    ++ cast-expression                  // ++x and --x are lvalues too
+    -- cast-expression
+    ...
 ```
 
-`postfix-expression` is one of its alternatives, so a name, `arr[i]` or `obj.field` all qualify. A binary or conditional operator is not a unary-expression at all:
+`postfix-expression` is one of those alternatives, and it is where a `name`, `arr[i]`, `obj.field`, a call `f()` and `p->m` all live. A binary or conditional operator is not a unary-expression at all:
 
 ```cpp
 using x + y          // not a unary-expression
@@ -50,7 +52,7 @@ using x++            // unary-expression, but a prvalue
 using ++x            // this one IS an lvalue
 ```
 
-Without [shall designate a modifiable lvalue]{.key}, `auto [using x++, y] = f();` would be well-formed.
+Without _shall designate a modifiable_ [lvalue]{.key}, `auto [using x++, y] = f();` would be well-formed.
 :::
 
 ::: {.slide .proposal}

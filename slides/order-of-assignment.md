@@ -13,7 +13,7 @@ For all three decomposition kinds, the elements are resolved in lexical order, a
 
 ```cpp
 auto [using a, using b, using c] = f();
-//        1st       2nd       3rd
+//        1st      2nd      3rd
 ```
 
 For a `using`-marked element that means: read from `e`, write via `operator=`, and only then move on.

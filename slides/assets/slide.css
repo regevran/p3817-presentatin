@@ -158,7 +158,8 @@ header#title-block-header { display: none; }
  * underline rather than as a signal. A mark *before* the heading cannot be
  * misread that way: nothing else in the deck sits on that axis. */
 .slide.today h1::before,
-.slide.proposal h1::before {
+.slide.proposal h1::before,
+.slide.process h1::before {
   content: "";
   display: inline-block;
   width: 0.19em;
@@ -172,6 +173,10 @@ header#title-block-header { display: none; }
    which would have cost the "today" signal entirely. */
 .slide.today h1::before    { background: #5f6d87; }
 .slide.proposal h1::before { background: var(--accent); }
+/* A third world: what changed between revisions. Neither "today's C++" nor
+   "what P3817 adds", so it cannot borrow either dot without lying about which
+   world the slide belongs to. --agg-ink is 11.6:1 on the slide background. */
+.slide.process h1::before  { background: var(--agg-ink); }
 
 .slide ul { margin: 0.4em 0; padding-left: 1.2em; }
 .slide li { margin: 0.25em 0; }
