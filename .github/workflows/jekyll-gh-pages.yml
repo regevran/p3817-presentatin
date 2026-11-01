@@ -22,10 +22,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install pandoc
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y pandoc
+      # Must match the pandoc render.sh is written against: it passes
+      # --syntax-highlighting, which is the 3.9+ name of --highlight-style.
+      # Pinning anything older fails at the first slide deck with
+      # "Unknown option --syntax-highlighting".
+      - name: Setup Pandoc
+        uses: r-lib/actions/setup-pandoc@v2
+        with:
+          pandoc-version: '3.9.0.2'
 
       - name: Build static site
         run: ./render.sh
